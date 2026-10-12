@@ -57,8 +57,8 @@
   </div>
 
   <script>
-    // Conexão WebSocket com o Broker HiveMQ (Porta 8000)
-    const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "web_client_" + Math.random());
+    // Conexão WSS (WebSocket Seguro) com o HiveMQ na porta 8884
+    const client = new Paho.MQTT.Client("broker.hivemq.com", 8884, "web_client_" + Math.random());
 
     client.onConnectionLost = function (responseObject) {
       console.log("Conexão perdida: " + responseObject.errorMessage);
@@ -77,10 +77,15 @@
       }
     };
 
+    // Activa useSSL: true para funcionar no GitHub Pages (HTTPS)
     client.connect({
+      useSSL: true,
       onSuccess: function () {
-        console.log("Conectado com sucesso ao Broker HiveMQ!");
+        console.log("Conectado com sucesso ao Broker HiveMQ via Secure WebSocket!");
         client.subscribe("escola/inspecao/geometria");
+      },
+      onFailure: function (error) {
+        console.log("Falha ao conectar: " + error.errorMessage);
       }
     });
   </script>
