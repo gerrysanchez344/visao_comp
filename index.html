@@ -1,1 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard de Inspeção de Qualidade</title>
+  <!-- Biblioteca Paho MQTT para navegador via WebSocket -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f4f4f9;
+      padding-top: 50px;
+    }
+    .card {
+      display: inline-block;
+      width: 350px;
+      padding: 30px;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .status-box {
+      font-size: 24px;
+      font-weight: bold;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      color: white;
+      background-color: #777;
+    }
+    .quadrado { background-color: #28a745; }
+    .outro { background-color: #dc3545; }
+  </style>
+</head>
+<body>
 
+  <div class="card">
+    <h2>Inspeção de Peças em Tempo Real</h2>
+    <p>Conexão com Broker HiveMQ via WebSocket</p>
+    <div id="status" class="status-box outro">Aguardando dados...</div>
+  </div>
+
+  <script>
+    // Conexão com o Broker HiveMQ usando porta WebSocket (8000)
+    const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "web_client_" + Math.random());
+
+    client.onConnectionLost = function (responseObject) {
+      console.log("Conexão perdida: " + responseObject.errorMessage);
+    };
+
+    client.onMessageArrived = function (message) {
+      const statusDiv = document.getElementById("status");
+      const valor = message.payloadString;
+
+      if (valor === "QUADRADO") {
+        statusDiv.innerText = "Peça Quadrada";
+        statusDiv.className = "status-box quadrado";
+      } else {
+        statusDiv.innerText = "Outra Peça / Ausente";
+        statusDiv.className = "status-box outro";
+      }
+    };
+
+    client.connect({
+      onSuccess: function () {
+        console.log("Conectado ao HiveMQ!");
+        client.subscribe("escola/inspecao/geometria");
+      }
+    });
+  </script>
+</body>
+</html>
