@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Dashboard de Inspeção de Qualidade</title>
+  <title>Dashboard de Inspeção Geométrica</title>
   <!-- Biblioteca Paho MQTT para o navegador -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
   <style>
@@ -38,26 +38,23 @@
       background-color: #6c757d;
       transition: all 0.3s ease;
     }
-    .quadrado { 
-      background-color: #28a745; 
-      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-    }
-    .outro { 
-      background-color: #dc3545; 
-      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-    }
+    /* Cores personalizadas para cada geometria */
+    .quadrado { background-color: #28a745; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4); }
+    .circulo  { background-color: #007bff; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4); }
+    .triangulo{ background-color: #fd7e14; box-shadow: 0 4px 12px rgba(253, 126, 20, 0.4); }
+    .nenhum   { background-color: #dc3545; box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4); }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Inspeção de Peças</h2>
+    <h2>Inspeção Geométrica</h2>
     <p>Monitoramento IoT via HiveMQ WebSocket</p>
-    <div id="status" class="status-box">Aguardando câmera...</div>
+    <div id="status" class="status-box nenhum">Aguardando peça...</div>
   </div>
 
   <script>
-    // Conexão WSS (WebSocket Seguro) com o HiveMQ na porta 8884
+    // Conexão WSS Segura para GitHub Pages
     const client = new Paho.MQTT.Client("broker.hivemq.com", 8884, "web_client_" + Math.random());
 
     client.onConnectionLost = function (responseObject) {
@@ -66,26 +63,28 @@
 
     client.onMessageArrived = function (message) {
       const statusDiv = document.getElementById("status");
-      const valor = message.payloadString;
+      const forma = message.payloadString;
 
-      if (valor === "QUADRADO") {
-        statusDiv.innerText = "Peça Quadrada";
+      if (forma === "QUADRADO") {
+        statusDiv.innerText = "Forma: Quadrado";
         statusDiv.className = "status-box quadrado";
+      } else if (forma === "CIRCULO") {
+        statusDiv.innerText = "Forma: Círculo";
+        statusDiv.className = "status-box circulo";
+      } else if (forma === "TRIANGULO") {
+        statusDiv.innerText = "Forma: Triângulo";
+        statusDiv.className = "status-box triangulo";
       } else {
-        statusDiv.innerText = "Outra Peça / Ausente";
-        statusDiv.className = "status-box outro";
+        statusDiv.innerText = "Sem Peça / Desconhecida";
+        statusDiv.className = "status-box nenhum";
       }
     };
 
-    // Activa useSSL: true para funcionar no GitHub Pages (HTTPS)
     client.connect({
       useSSL: true,
       onSuccess: function () {
-        console.log("Conectado com sucesso ao Broker HiveMQ via Secure WebSocket!");
+        console.log("Conectado ao HiveMQ via WebSocket Seguro!");
         client.subscribe("escola/inspecao/geometria");
-      },
-      onFailure: function (error) {
-        console.log("Falha ao conectar: " + error.errorMessage);
       }
     });
   </script>
